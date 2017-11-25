@@ -192,7 +192,6 @@
 
 ;(simplify-exp (syntax (or a b)))
 ;(simplify-exp (syntax (or (or a b) (or a b))))
-;(simplify-exp (syntax (and (or a b) (or a b))))
 ;(simplify-exp (syntax (and (and a b) (and a c))))
 ;(simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))
 
