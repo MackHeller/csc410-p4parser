@@ -11,7 +11,7 @@
 ;; ----------------------------------------------------------------------------
 ;; Our make-rosette-simple function
 ;(define (make-rosette-simple formula) (make-rosette-simple formula (compute-height (syntax->datum formula) 0))) 
-(define (make-rosette-simple formula depth) (append
+(define (make-rosette-simple formula depth) (begin (printf "Trying at depth ~a ...\n" depth)(append
                                        (generate-declarations (determineType (instance-types (syntax->datum formula))))
                                        (list (list
                                               'synthesize
@@ -19,7 +19,7 @@
                                               '#:guarantee (quasiquote(assert (eq?
                                                                                 (unquote (syntax->datum formula))
                                                                                 (unquote (skeleton-expression formula depth)))))))
-                                       ))
+                                       )))
 ;; Alt to make-sosette-simple that allows us to output solution
 (define (print-solution formula depth) (append (list (quote
                                                       "
@@ -64,9 +64,9 @@
   )
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
 ;; decreasing depth until we get an unsat. Returns the synthesis with the lowest depth
-(define (simplify-exp expr)(simplify-exp-rec expr (compute-height (syntax->datum expr) 0)))
+(define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))(simplify-exp-rec expr (compute-height (syntax->datum expr) 0))))
 (define (simplify-exp-rec expr n)(if (unsat? (eval-exp (make-rosette-simple expr n)))
-                                     (begin (output-prep)(output-rosette-to-file(print-solution expr (+ n 1))));todo change to correct output
+                                     (begin (printf "Success!!\n")(output-prep)(output-rosette-to-file(print-solution expr (+ n 1))))
                                      (simplify-exp-rec expr (- n 1))
                                      )
                                     )
