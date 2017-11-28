@@ -22,8 +22,7 @@
                                        ))
 ;; Alt to make-sosette-simple that allows us to output solution
 (define (print-solution formula depth) (append (list (quote
-                                                      "
-#lang rosette
+                                                      "#lang rosette
                                                       (require racket/match)
                                                       (require rosette/lib/synthax)
                                                       (require racket/include)(include \"ults.rkt\")
@@ -191,7 +190,7 @@
 ;;                                  Check-in 5
 ;; ----------------------------------------------------------------------------
 
-(simplify-exp (syntax (or a b)))
+;(simplify-exp (syntax (or a b)))
 ;(simplify-exp (syntax (or (or a b) (or a b))))
 ;(simplify-exp (syntax (and (and a b) (and a c))))
 ;(simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))
