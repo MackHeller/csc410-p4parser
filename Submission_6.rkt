@@ -30,11 +30,11 @@
                                                       (require racket/include)(include \"ults.rkt\")
                                                       (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) height)
                                                         #:base (choose booleanvariables ... integervariables ...)
-                                                        #:else (choose
-                                                                booleanvariables ... integervariables ...
-                                                                ((choose >= > <= < + - && || !) (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1))
-                                                                                              (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1)))
-                                                                )
+                                                        #:else (choose #t #f booleanvariables ... integervariables ...
+                                                               ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1))
+                                                                                             (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1)))
+                                                               (! (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1)))
+                                                               )
                                                         )"
                                                       ))
                                         (generate-declarations (determineType (instance-types (syntax->datum formula))))
@@ -56,11 +56,12 @@
 (define (eval-exp expr)(eval (append '(begin) expr)ns))
 ;; Our define-synthax function
 (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) height)
- #:base (choose booleanvariables ... integervariables ...)
+ #:base (choose #t #f booleanvariables ... integervariables ...)
  #:else (choose
-         booleanvariables ... integervariables ...
-          ((choose >= > <= < + - && || !) (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1))
+         #t #f booleanvariables ... integervariables ...
+          ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1))
                         (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1)))
+          (! (gen-expression (booleanvariables ...)  (integervariables ...) (- height 1)))
           )
   )
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
@@ -69,7 +70,7 @@
 (define (simplify-exp-rec expr n)(if (unsat? (eval-exp (make-rosette-simple expr n)))
                                      (if (eq? n (compute-height (syntax->datum expr) 0))
                                          (begin (printf "Failure :(\n"))
-                                         (begin (printf "~a is toooo deep! Success at ~a!!\n" n (+n 1))(output-prep)(output-rosette-to-file(print-solution expr (+ n 1))))
+                                         (begin (printf "~a is toooo deep! Success at ~a!!\n" n (+ n 1))(output-prep)(output-rosette-to-file(print-solution expr (+ n 1))))
                                          )
                                      (simplify-exp-rec expr (- n 1))
                                      )
@@ -89,16 +90,6 @@
                                                                          (list (get-booleans formula))
                                                                          (list (get-integers formula))
                                                                          (list depth)))))
-
-                                                        ;(unquote (car (syntax->datum formula)))
-                                                        ;(unquote (append (list (quote gen-expression))
-                                                        ;                 (list (get-booleans formula))
-                                                        ;                 (list (get-integers formula))
-                                                        ;                 (list (- depth 1))))
-                                                        ;(unquote (append (list (quote gen-expression))
-                                                        ;                 (list (get-booleans formula))
-                                                        ;                 (list (get-integers formula))
-                                                        ;                 (list (- depth 1)))))))
 
 ;; ----------------
 ;;  Type Inference
@@ -209,6 +200,14 @@
                                                                     (simplification_rules (third formula)))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
+                                             ['> (simplify_greater_than (simplification_rules (second formula))
+                                                                        (simplification_rules (third formula)))]
+                                             ['< (simplify_less_than (simplification_rules (second formula))
+                                                                     (simplification_rules (third formula)))]
+                                             ['>= (simplify_greater_than_eq (simplification_rules (second formula))
+                                                                            (simplification_rules (third formula)))]
+                                             ['<= (simplify_less_than_eq (simplification_rules (second formula))
+                                                                            (simplification_rules (third formula)))]
                                              [else formula])
                                            formula))
 
@@ -221,6 +220,22 @@
 (define (simplify_subtraction arg1 arg2) (if (eq? arg2 0)
                                              arg1
                                              (list '- arg1 arg2)))
+
+(define (simplify_greater_than arg1 arg2) (if (eq? arg1 arg2)
+                                              #f
+                                              (list '> arg1 arg2)))
+
+(define (simplify_less_than arg1 arg2) (if (eq? arg1 arg2)
+                                           #f
+                                           (list '< arg1 arg2)))
+
+(define (simplify_greater_than_eq arg1 arg2) (if (eq? arg1 arg2)
+                                                 #t
+                                                 (list '>= arg1 arg2)))
+
+(define (simplify_less_than_eq arg1 arg2) (if (eq? arg1 arg2)
+                                              #t
+                                              (list '<= arg1 arg2)))
 
 ;; ----------------------------------------------------------------------------
 ;;                                  Check-in 5
