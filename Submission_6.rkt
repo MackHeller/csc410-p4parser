@@ -67,7 +67,7 @@
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
 ;; decreasing depth until we get an unsat. Returns the synthesis with the lowest depth
 (define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))(simplify-exp-rec expr (compute-height (syntax->datum expr) 0))))
-(define (simplify-exp-rec expr n)(if (unsat? (eval-exp (make-rosette-simple expr n)))
+(define (simplify-exp-rec expr n)(if (or (unsat? (eval-exp (make-rosette-simple expr n))) (<= n 0))
                                      (if (eq? n (compute-height (syntax->datum expr) 0))
                                          (begin (printf "Failure :(\n"))
                                          (begin (printf "~a is toooo deep! Success at ~a!!\n" n (+ n 1))(output-prep)(output-rosette-to-file(print-solution expr (+ n 1))))
@@ -245,7 +245,8 @@
 ;(simplify-exp (syntax (or (or a b) (or a b))))
 ;(simplify-exp (syntax (and (and a b) (and a c))))
 ;(simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))
-(simplify-exp (syntax (+ b (+ a 0))))
+;(simplify-exp (syntax (+ b (+ a 0))))
+(simplify-exp (syntax (and b (or a b))))
 ;(simplify-exp (syntax (and a (< c d))))
 ;(simplify-exp (syntax (or (or a (< c d)) (and a (< c d)))))
 ;(simplify-exp (syntax (and (and (> a c) (> c d)) (> a d))))
