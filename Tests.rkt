@@ -4,15 +4,36 @@
 
 (if (eq? (vector-length (current-command-line-arguments)) 0)
     (printf "Please indicate the test you wish to run\n")
-    (case (vector-ref (current-command-line-arguments) 0)
-      ['1 (simplify-exp (syntax (or a b)))]
-      ['2 (simplify-exp (syntax (or (or a b) (or a b))))]
-      ['3 (simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))]
-      ['4 (simplify-exp (syntax (or (! a) (and (and b (! b)) (! a)))))]
-      ['5 (simplify-exp (syntax (+ b (+ a 0))))]
-      ['6 (simplify-exp (syntax (+ (+ (- b 0) 0) (+ a 0))))]
-      ['7 (simplify-exp (syntax (or a (> b b))))]
-      ['8 (simplify-exp (syntax (or (< a a) (< b b))))]
-      ['9 (simplify-exp (syntax (and (> a b) (< c d))))]
-      [else (printf "Please choose a test between 1 and 9\n")])
-    )
+    (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 1)
+        (simplify-exp (syntax (or a b)))
+        (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 2)
+            (simplify-exp (syntax (or (or a b) (or a b))))
+            (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 3)
+                (simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))
+                (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 4)
+                    (simplify-exp (syntax (or (! a) (and (and b (! b)) (! a)))))
+                    (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 5)
+                        (simplify-exp (syntax (+ b (+ a 0))))
+                        (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 6)
+                            (simplify-exp (syntax (+ (+ (- b 0) 0) (+ a 0))))
+                            (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 7)
+                                (simplify-exp (syntax (or a (> b b))))
+                                (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 8)
+                                    (simplify-exp (syntax (or (< a a) (< b b))))
+                                    (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 9)
+                                        (simplify-exp (syntax (and (> a b) (< c d))))
+                                        (printf "Please choose a test between 1 and 9\n")))))))))))
+
+;    
+;    (case (string->number (vector-ref (current-command-line-arguments) 0))
+;      [1 (simplify-exp (syntax (or a b)))]
+;      ['2 (simplify-exp (syntax (or (or a b) (or a b))))]
+;      ['3 (simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))]
+;      ['4 (simplify-exp (syntax (or (! a) (and (and b (! b)) (! a)))))]
+;      ['5 (simplify-exp (syntax (+ b (+ a 0))))]
+;      ['6 (simplify-exp (syntax (+ (+ (- b 0) 0) (+ a 0))))]
+;      ['7 (simplify-exp (syntax (or a (> b b))))]
+;      ['8 (simplify-exp (syntax (or (< a a) (< b b))))]
+;      ['9 (simplify-exp (syntax (and (> a b) (< c d))))]
+;      [else (printf "Please choose a test between 1 and 9\n")])
+;    )
