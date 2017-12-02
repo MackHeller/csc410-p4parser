@@ -5,6 +5,7 @@
 (define ns (namespace-anchor->namespace anc))
 (require racket/include)
 (include "ults.rkt")
+(provide simplify-exp)
 
 ;; ----------------------------------------------------------------------------
 ;;                                    Our Code
@@ -246,18 +247,3 @@
 (define (simplify_less_than_eq arg1 arg2) (if (eq? arg1 arg2)
                                               #t
                                               (list '<= arg1 arg2)))
-
-;; ----------------------------------------------------------------------------
-;;                                  Check-in 5
-;; ----------------------------------------------------------------------------
-
-;(simplify-exp (syntax (or a b)))
-;(simplify-exp (syntax (or (or a b) (or a b))))
-;(simplify-exp (syntax (and (and a b) (and a c))))
-(simplify-exp (syntax (and (or (and (or a b) (and b c)) (and b (or a c))) (and b (or (and a c) (or c b))))))
-;(simplify-exp (syntax (+ b (+ a 0))))
-;(simplify-exp (syntax (and b (or a b))))
-
-;(simplify-exp (syntax (and a (< c d))))
-;(simplify-exp (syntax (or (or a (< c d)) (and a (< c d)))))
-;(simplify-exp (syntax (and (and (> a c) (> c d)) (> a d))))
