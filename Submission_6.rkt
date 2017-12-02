@@ -196,7 +196,7 @@
 
 (define (print-to-file-and-get-solution) (begin (system "Racket data.rkt > solution.txt")
                               (define solution (file->syntax "solution.txt"))
-                              (pretty-print solution)))
+                              (pretty-print (syntax->datum solution))))
 
 ;; -----------------------------
 ;;  Manual Simplification Rules
