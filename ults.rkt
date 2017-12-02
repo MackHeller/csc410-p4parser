@@ -2,14 +2,14 @@
 ;;                                  Starter Code
 ;; ----------------------------------------------------------------------------
 ;; Returns a syntax object from reading the contents of a file.
-(define (file->syntax file)
+(define (file->syntax _file)
   (define (read-syntax/count-lines)
     (port-count-lines! (current-input-port))
     (read-syntax))
-  (define-values (base _ __) (split-path file))
+  (define-values (base _ __) (split-path _file))
   (parameterize ([current-namespace (make-base-namespace)])
     (define stx (with-handlers ([exn:fail? (const #f)])
-                    (with-input-from-file file read-syntax/count-lines)))
+                    (with-input-from-file _file read-syntax/count-lines)))
     stx))
 (define keywords (list '+ '-           ;Arithmetic
                        'sub1 'add1     ; (sub1 a) is (- a 1) and (add1 a) (+ a 1)
