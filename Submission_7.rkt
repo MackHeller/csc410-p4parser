@@ -160,6 +160,13 @@
                                                (append (list (second (car variables)))
                                                        (parse-integers (rest variables))))
                                            ))
+;; A helper function that returns a list of all the integer constants in a formula
+(define (get-constants formula) (remove-duplicates (build-constant-list (flat-list formula))))
+(define (build-constant-list formula) (if (null? formula)
+                                          (list)
+                                          (if (number? (car formula))
+                                              (append (list (car formula)) (build-constant-list (rest formula)))
+                                              (build-constant-list (rest formula)))))
 ;; -------------------
 ;;  Utility Functions
 ;; -------------------
