@@ -31,8 +31,8 @@
                                                       (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
                                                         #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
                                                         #:else (choose #t #f booleanvariables ... integervariables ... integerconstants ...
-                                                               ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                                                             (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                                                               ((choose = >= > <= < + - && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                                                                      (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                )
                                                         )"
@@ -60,8 +60,8 @@
  #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
  #:else (choose
          #t #f booleanvariables ... integervariables ... integerconstants ...
-          ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                        (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose = >= > <= < + - && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                 (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           )
   )
@@ -201,7 +201,7 @@
         (else
          (list lst))))
 (define (removeops lst)
-  (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if '%top '#t '#f ) (flat-list lst)))
+  (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if 'equal? '%top '#t '#f ) (flat-list lst)))
 
 (define (print-to-file-and-get-solution) (begin (system "Racket data.rkt > solution.txt")
                               (define solution (file->syntax "solution.txt"))
@@ -226,12 +226,16 @@
                                              ['>= (simplify_greater_than_eq (simplification_rules (second formula))
                                                                             (simplification_rules (third formula)))]
                                              ['<= (simplify_less_than_eq (simplification_rules (second formula))
-                                                                            (simplification_rules (third formula)))]
+                                                                         (simplification_rules (third formula)))]
+                                             ['== (simplify_double_equal (simplification_rules (second formula))
+                                                                         (simplification_rules (third formula)))]
                                              [(not !) (simplify_not (simplification_rules (second formula)))]
                                              [(or ||) (simplify_or (simplification_rules (second formula))
-                                                                     (simplification_rules (third formula)))]
+                                                                   (simplification_rules (third formula)))]
                                              [(and &&) (simplify_and (simplification_rules (second formula))
-                                                                       (simplification_rules (third formula)))]
+                                                                     (simplification_rules (third formula)))]
+                                             ['= (simplify_equal (simplification_rules (second formula))
+                                                                 (simplification_rules (third formula)))]
                                              [else (list (car formula) (simplification_rules (second formula))(simplification_rules (third formula)))])
                                            formula))
 
@@ -261,6 +265,8 @@
                                               #t
                                               (list '<= arg1 arg2)))
 
+(define (simplify_double_equal arg1 arg2) (list '= arg1 arg2))
+
 (define (simplify_not arg1) (if (eq? arg1 #t)
                                 #f
                                 (if (eq? arg1 #f)
@@ -278,3 +284,5 @@
                                     (if (and (eq? arg1 #t) (eq? arg2 #t))
                                         #t
                                         (list 'and arg1 arg2))))
+
+(define (simplify_equal arg1 arg2) (list 'equal? arg1 arg2))
