@@ -29,7 +29,7 @@
                                                       (require rosette/lib/synthax)
                                                       (require racket/include)(include \"ults.rkt\")
                                                       (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
-                                                        #:base (choose #t #f 5 booleanvariables ... integervariables ... integerconstants ...)
+                                                        #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
                                                         #:else (choose #t #f booleanvariables ... integervariables ... integerconstants ...
                                                                ((choose = >= > <= < + - min max && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
                                                                                                               (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
@@ -178,7 +178,7 @@
 ;;  Utility Functions
 ;; -------------------
 (define (isVoid item lst)(if (equal? (car item) 'void?)
-                             (andmap (lambda (item2) (equal? (cdr item2) (cdr item))) lst)
+                             (andmap (lambda (item2) (!(equal? (cdr item2) (cdr item)))) lst)
                              #f))
 (define (isValid item lst) (andmap (lambda (item2)
                                                  (if (equal? (cdr item) (cdr item2))
