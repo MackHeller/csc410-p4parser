@@ -1,6 +1,6 @@
 #lang rosette
 
-(require "Submission_6.rkt")
+(require "Submission_7.rkt")
 
 (if (eq? (vector-length (current-command-line-arguments)) 0)
     (printf "Please indicate the test you wish to run\n")
@@ -22,4 +22,6 @@
                                     (simplify-exp (syntax (or (< a a) (< b c))))
                                     (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 9)
                                         (simplify-exp (syntax (and (> a b) (< c d))))
-                                        (printf "Please choose a test between 1 and 9\n")))))))))))
+                                        (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 10)
+                                            (simplify-exp (syntax (add1 4)))
+                                            (printf "Please choose a test between 1 and 9\n"))))))))))))

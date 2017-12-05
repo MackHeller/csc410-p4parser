@@ -28,7 +28,7 @@
 ;; operator when starting to parse an expression.
 (define (optype? op)
   (match op
-    [(or '+ '- 'min 'max '>= '> '< '<= '==) 'integer?]
+    [(or '+ '- 'min 'max '>= '> '< '<= '== 'add1 'sub1) 'integer?]
     [(or 'or 'and '! '=) 'boolean?]
     [(or 'if '%top) 'void?]))
 ;; Returns true is the syntax objects represents an id

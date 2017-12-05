@@ -29,11 +29,12 @@
                                                       (require rosette/lib/synthax)
                                                       (require racket/include)(include \"ults.rkt\")
                                                       (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
-                                                        #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
+                                                        #:base (choose #t #f 5 booleanvariables ... integervariables ... integerconstants ...)
                                                         #:else (choose #t #f booleanvariables ... integervariables ... integerconstants ...
-                                                               ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                               ((choose >= > <= < + - && || min max) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
                                                                                              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                                                               ((choose add1 sub1) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                )
                                                         )"
                                                       ))
@@ -60,9 +61,10 @@
  #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
  #:else (choose
          #t #f booleanvariables ... integervariables ... integerconstants ...
-          ((choose >= > <= < + - && ||) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+          ((choose >= > <= < + - && || min max) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose add1 sub1) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           )
   )
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
@@ -201,7 +203,7 @@
         (else
          (list lst))))
 (define (removeops lst)
-  (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if '%top '#t '#f ) (flat-list lst)))
+  (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if '%top '#t '#f 'add1 'sub1) (flat-list lst)))
 
 (define (print-to-file-and-get-solution) (begin (system "Racket data.rkt > solution.txt")
                               (define solution (file->syntax "solution.txt"))
@@ -213,7 +215,7 @@
 
 (define (manual_simplification formula) (simplification_rules (syntax->datum formula)))
 
-(define (simplification_rules formula) (if (list? formula)
+(define (simplification_rules formula) (if (and (list? formula) (>= (length formula) 3))
                                            (case (car formula)
                                              ['+ (simplify_addition (simplification_rules (second formula))
                                                                     (simplification_rules (third formula)))]
