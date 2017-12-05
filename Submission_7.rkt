@@ -74,9 +74,13 @@
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
 ;; decreasing depth until we get an unsat. Returns the synthesis with the lowest depth
 (define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))
-                                  (printf "Manual simplification complete: ~a \n" (manual_simplification expr))
-                                  (simplify-exp-rec (manual_simplification expr) (compute-height (manual_simplification expr) 0))
-                                  (print-to-file-and-get-solution)))
+                                  (define simp-exp (manual_simplification expr))
+                                  (printf "Manual simplification complete: ~a \n" simp-exp)
+                                  (if (list? simp-exp)
+                                      (begin
+                                        (simplify-exp-rec simp-exp (compute-height simp-exp 0))
+                                        (print-to-file-and-get-solution))
+                                      simp-exp)))
 (define (simplify-exp-rec expr n)(if (or (< n 0) (unsat? (eval-exp (make-rosette-simple expr n))))
                                      (if (eq? n (compute-height expr 0))
                                          (begin (printf "Failure :(\n"))
@@ -219,7 +223,7 @@
 
 (define (manual_simplification formula) (simplification_rules (syntax->datum formula)))
 
-(define (simplification_rules formula) (if (and (list? formula) (>= (length formula) 3))
+(define (simplification_rules formula) (if (and (list? formula))
                                            (case (car formula)
                                              ['+ (simplify_addition (simplification_rules (second formula))
                                                                     (simplification_rules (third formula)))]
@@ -249,7 +253,7 @@
                                              ['if (simplify_if (simplification_rules (second formula))
                                                                (simplification_rules (third formula))
                                                                (simplification_rules (fourth formula)))]
-                                             [else (list (car formula) (simplification_rules (second formula))(simplification_rules (third formula)))])
+                                             [else formula])
                                            formula))
 
 (define (simplify_addition arg1 arg2) (if (eq? arg1 0)

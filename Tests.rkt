@@ -26,4 +26,6 @@
                                             (simplify-exp (syntax (add1 4)))
                                             (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 11)
                                                 (simplify-exp (syntax (if #t a b)))
-                                                (printf "Please choose a test between 1 and 9\n")))))))))))))
+                                                (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 12)
+                                                    (simplify-exp (syntax (! #t)))
+                                                    (printf "Please choose a test between 1 and 9\n"))))))))))))))
