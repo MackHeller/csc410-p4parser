@@ -31,9 +31,12 @@
                                                       (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
                                                         #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
                                                         #:else (choose #t #f booleanvariables ... integervariables ... integerconstants ...
-                                                               ((choose = >= > <= < + - && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                                                                      (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                                                               ((choose = >= > <= < + - min max && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                                                                              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                                                               (if (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                                   (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                                   (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                )
                                                         )"
                                                       ))
@@ -60,9 +63,12 @@
  #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
  #:else (choose
          #t #f booleanvariables ... integervariables ... integerconstants ...
-          ((choose = >= > <= < + - && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                 (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose = >= > <= < + - min max && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           (! (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          (if (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           )
   )
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
@@ -229,6 +235,10 @@
                                                                          (simplification_rules (third formula)))]
                                              ['== (simplify_double_equal (simplification_rules (second formula))
                                                                          (simplification_rules (third formula)))]
+                                             ['min (simplify_min (simplification_rules (second formula))
+                                                                 (simplification_rules (third formula)))]
+                                             ['max (simplify_max (simplification_rules (second formula))
+                                                                 (simplification_rules (third formula)))]
                                              [(not !) (simplify_not (simplification_rules (second formula)))]
                                              [(or ||) (simplify_or (simplification_rules (second formula))
                                                                    (simplification_rules (third formula)))]
@@ -236,6 +246,9 @@
                                                                      (simplification_rules (third formula)))]
                                              ['= (simplify_equal (simplification_rules (second formula))
                                                                  (simplification_rules (third formula)))]
+                                             ['if (simplify_if (simplification_rules (second formula))
+                                                               (simplification_rules (third formula))
+                                                               (simplification_rules (fourth formula)))]
                                              [else (list (car formula) (simplification_rules (second formula))(simplification_rules (third formula)))])
                                            formula))
 
@@ -267,6 +280,10 @@
 
 (define (simplify_double_equal arg1 arg2) (list '= arg1 arg2))
 
+(define (simplify_min arg1 arg2) (list 'min arg1 arg2))
+
+(define (simplify_max arg1 arg2) (list 'max arg1 arg2))
+
 (define (simplify_not arg1) (if (eq? arg1 #t)
                                 #f
                                 (if (eq? arg1 #f)
@@ -286,3 +303,5 @@
                                         (list 'and arg1 arg2))))
 
 (define (simplify_equal arg1 arg2) (list 'equal? arg1 arg2))
+
+(define (simplify_if arg1 arg2 arg3) (list 'if arg1 arg2 arg3))
