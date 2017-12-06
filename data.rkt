@@ -13,4 +13,4 @@
                                                                    (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                 ((choose ! add1 sub1) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
                                                                )
-                                                        ) (define-symbolic a integer?) (define-symbolic b integer?) (define (gen a b) (gen-expression () (a b) () 0)) (syntax->datum (car (generate-forms (synthesize #:forall (list a b) #:guarantee (assert (eq? (if #t a b) (gen a b))))))) ;)
+                                                        ) (define-symbolic xm integer?) (define-symbolic lm integer?) (define-symbolic xm2 integer?) (define-symbolic lm2 integer?) (define (gen xm lm xm2 lm2) (gen-expression () (xm lm xm2 lm2) (0) 2)) (syntax->datum (car (generate-forms (synthesize #:forall (list xm lm xm2 lm2) #:guarantee (assert (eq? (min (max (+ xm (min 0 0)) lm) (min xm2 lm2)) (gen xm lm xm2 lm2))))))) ;)
