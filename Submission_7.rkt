@@ -22,24 +22,7 @@
                                                                                 (unquote (skeleton-expression formula depth)))))))
                                        )))
 ;; Alt to make-sosette-simple that allows us to output solution
-(define (print-solution formula depth) (append (list (quote
-                                                      "
-#lang rosette
-                                                      (require racket/match)
-                                                      (require rosette/lib/synthax)
-                                                      (require racket/include)(include \"ults.rkt\")
-                                                      (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
-                                                        #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
-                                                        #:else (choose #t #f booleanvariables ... integervariables ... integerconstants ...
-                                                               ((choose = >= > <= < + - min max && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                                                                              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-                                                               (if (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                                   (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                                   (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-                                                                ((choose ! add1 sub1) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-                                                               )
-                                                        )"
-                                                      ))
+(define (print-solution formula depth) (append gen-exp-text
                                         (generate-declarations (determineType (instance-types formula)))
                                         (list (quasiquote (define (unquote (append(list (quote gen)) (getvars formula)))
                                                       (unquote (append (list (quote gen-expression))
@@ -63,10 +46,25 @@
  #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
  #:else (choose
          #t #f booleanvariables ... integervariables ... integerconstants ...
-          ((choose = >= > <= < + - min max && || equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+          ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
                                                          (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-          (if (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+          (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          )
+  )
+(define-synthax(gen-expression-weaker (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
+ #:base (choose booleanvariables ... integervariables ...)
+ #:else (choose booleanvariables ... integervariables ... 
+          ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
               (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
               (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           )
@@ -121,14 +119,22 @@
 ;; A helper function that lists the inferred types of all instances of all variables in the given formula.
 ;; Variables may appear more than once with different inferred types - other helper functions analyze
 ;; these types and determine what type each variable should ultimately be assigned
-(define (instance-types formula) (process-elements (rest formula) (optype? (car formula))))
+(define (instance-types formula) (process-elements (rest formula) (optype? (car formula) (rest formula))))
 (define (process-elements elements type) (if (null? elements)
                                                (list)
                                                (if (list? (car elements))
-                                                   (append (instance-types (car elements)) (process-elements (rest elements) type))
+                                                   (append (instance-types (car elements)) (check-if-case elements type))
                                                    (if (or (number? (car elements)) (boolean? (car elements)))
-                                                       (process-elements (rest elements) type)
-                                                       (append (list (list type (car elements))) (process-elements (rest elements) type))))))
+                                                       (check-if-case elements type)
+                                                       (if (eq? type 'both?)
+                                                           (append (list (list 'boolean? (car elements))) (check-if-case elements type))
+                                                           (append (list (list type (car elements))) (check-if-case elements type)))))))
+;; acounts for the if case - first one is a boolean the rest are void.
+(define (check-if-case elements type)(if (eq? type 'both)
+                                        (process-elements (rest elements) 'void)
+                                        (process-elements (rest elements) type)
+                                        )
+  )
 ;; Infers the types of all variables in the formula
 (define (determineType lst)(determineTypeHelp (remove-duplicates lst)))
 (define (determineTypeHelp lst )(if (empty? lst)

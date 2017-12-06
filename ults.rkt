@@ -18,7 +18,7 @@
                        'max 'min       ;Conditional arithmetic
                        ;; '& '\| '^           ;Bitwise operator
                        '= '>= '<= '> '<   ;Integer comparison
-                       'integer? 'boolean? ;Types
+                       'integer? 'boolean? 'both? ;Types
                        'void?              ;Void type
                        'if                 ;Conditionals
                        ))
@@ -26,11 +26,13 @@
 ;; The void? type represents either integer or boolean.
 ;; The %top operator is the default operator used as the top
 ;; operator when starting to parse an expression.
-(define (optype? op)
+(define (optype? op rest)
   (match op
     [(or '+ '- 'min 'max '>= '> '< '<= '= 'add1 'sub1) 'integer?]
     [(or 'or 'and '! 'equal?) 'boolean?]
-    [(or 'if '%top) 'void?]))
+    [(or '%top) 'void?]
+    [(or 'if) 'both?]
+    ))
 ;; Returns true is the syntax objects represents an id
 ;; that is not a keyword of the language.
 (define (is-syntax-of-id stx)
@@ -66,3 +68,35 @@
     #'(define-symbolic vname vtype)))
 (define (make-all-rosette-decl lv)
   (datum->syntax #f (map make-rosette-decl lv)))
+
+(define gen-exp-text (list (quote "
+#lang rosette
+(require racket/match)
+(require rosette/lib/synthax)
+(require racket/include)(include \"ults.rkt\")
+(define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
+ #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
+ #:else (choose
+         #t #f booleanvariables ... integervariables ... integerconstants ...
+          ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          )
+  )
+(define-synthax(gen-expression-weaker (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
+ #:base (choose booleanvariables ... integervariables ...)
+ #:else (choose booleanvariables ... integervariables ... 
+          ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+          (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))))")
+))
