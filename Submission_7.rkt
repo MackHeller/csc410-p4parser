@@ -135,8 +135,8 @@
   )
 ;; Infers the types of all variables in the formula
 (define (determineType lst) (determineTypeHelp
-                                                                    (remove-duplicates lst)
-                                                                    (remove-duplicates lst)))
+                             (remove-duplicates lst)
+                             (remove-duplicates lst)))
 (define (determineTypeHelp lst fullLst)(if (empty? lst)
                                            '()
                                            (append
