@@ -26,7 +26,7 @@
 ;; The void? type represents either integer or boolean.
 ;; The %top operator is the default operator used as the top
 ;; operator when starting to parse an expression.
-(define (optype? op rest)
+(define (optype? op)
   (match op
     [(or '+ '- 'min 'max '>= '> '< '<= '= 'add1 'sub1) 'integer?]
     [(or 'or 'and '! 'equal?) 'boolean?]

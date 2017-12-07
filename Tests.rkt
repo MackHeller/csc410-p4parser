@@ -29,5 +29,5 @@
                                                 (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 12)
                                                     (simplify-exp (syntax  (min (max (+ xm (min 0 0)) lm) (min xm2 lm2))))
                                                     (if (eq? (string->number (vector-ref (current-command-line-arguments) 0)) 13)
-                                                        (simplify-exp (syntax (! #t)))
+                                                        (simplify-exp (syntax (if (> (+ (- xmts lmts) xpos) (+ xaux_1 xpos)) xpos lpos) ))
                                                         (printf "Please choose a test between 1 and 13\n")))))))))))))))

@@ -119,7 +119,7 @@
 ;; A helper function that lists the inferred types of all instances of all variables in the given formula.
 ;; Variables may appear more than once with different inferred types - other helper functions analyze
 ;; these types and determine what type each variable should ultimately be assigned
-(define (instance-types formula) (process-elements (rest formula) (optype? (car formula) (rest formula))))
+(define (instance-types formula) (process-elements (rest formula) (optype? (car formula))))
 (define (process-elements elements type) (if (null? elements)
                                                (list)
                                                (if (list? (car elements))
@@ -130,8 +130,8 @@
                                                            (append (list (list 'boolean? (car elements))) (check-if-case elements type))
                                                            (append (list (list type (car elements))) (check-if-case elements type)))))))
 ;; acounts for the if case - first one is a boolean the rest are void.
-(define (check-if-case elements type)(if (eq? type 'both)
-                                        (process-elements (rest elements) 'void)
+(define (check-if-case elements type)(if (eq? type 'both?)
+                                        (process-elements (rest elements) 'void?)
                                         (process-elements (rest elements) type)
                                         )
   )
