@@ -315,4 +315,4 @@
 
 (define (simplify_equal arg1 arg2) (list 'equal? arg1 arg2))
 
-(define (simplify_if arg1 arg2 arg3) (list 'if arg1 arg2 arg3))
+(define (simplify_if arg1 arg2 arg3) (if (equal? arg2 arg3) arg3 (list 'if arg1 arg2 arg3)))
