@@ -236,14 +236,30 @@
                                                                     (simplification_rules (third formula)))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
-                                             ['> (simplify_greater_than (simplification_rules (second formula))
-                                                                        (simplification_rules (third formula)))]
-                                             ['< (simplify_less_than (simplification_rules (second formula))
-                                                                     (simplification_rules (third formula)))]
-                                             ['>= (simplify_greater_than_eq (simplification_rules (second formula))
-                                                                            (simplification_rules (third formula)))]
-                                             ['<= (simplify_less_than_eq (simplification_rules (second formula))
-                                                                         (simplification_rules (third formula)))]
+                                             ['> (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                                     (simplify_comparison_identical (simplification_rules (second formula))
+                                                                              (simplification_rules (third formula))
+                                                                              '>)
+                                                     (simplify_greater_than (simplification_rules (second formula)) 
+                                                                            (simplification_rules (third formula))))]
+                                             ['< (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                                     (simplify_comparison_identical (simplification_rules (second formula))
+                                                                              (simplification_rules (third formula))
+                                                                              '<)
+                                                     (simplify_less_than (simplification_rules (second formula))
+                                                                         (simplification_rules (third formula))))]
+                                             ['>= (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                                     (simplify_comparison_identical (simplification_rules (second formula))
+                                                                              (simplification_rules (third formula))
+                                                                              '>=)
+                                                     (simplify_greater_than_eq (simplification_rules (second formula))
+                                                                               (simplification_rules (third formula))))]
+                                             ['<= (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                                     (simplify_comparison_identical (simplification_rules (second formula))
+                                                                              (simplification_rules (third formula))
+                                                                              '<=)
+                                                     (simplify_less_than_eq (simplification_rules (second formula))
+                                                                            (simplification_rules (third formula))))]
                                              ['== (simplify_double_equal (simplification_rules (second formula))
                                                                          (simplification_rules (third formula)))]
                                              ['min (simplify_min (simplification_rules (second formula))
@@ -288,6 +304,17 @@
 (define (simplify_less_than_eq arg1 arg2) (if (eq? arg1 arg2)
                                               #t
                                               (list '<= arg1 arg2)))
+
+
+(define (simplify_comparison_identical arg1 arg2 operator) (if (and (list? arg1) (list? arg2))
+                                                (if (member (second arg1) arg2)
+                                                    (list operator (second (remove (second arg1) arg1)) (second(remove (second arg1) arg2)))
+                                                    (if (member (third arg1) arg2)
+                                                        (list operator (second (remove (third arg1) arg1)) (second (remove (third arg1) arg2)))
+                                                        (list operator arg1 arg2)
+                                                        )
+                                                )
+                                                (list '< arg1 arg2)))
 
 (define (simplify_double_equal arg1 arg2) (list '= arg1 arg2))
 
