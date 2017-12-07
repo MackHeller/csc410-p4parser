@@ -134,22 +134,24 @@
                                         )
   )
 ;; Infers the types of all variables in the formula
-(define (determineType lst)(determineTypeHelp (remove-duplicates lst)))
-(define (determineTypeHelp lst )(if (empty? lst)
-                                   '()
-                                   (append
-                                        (if (isValid (car lst)(cdr lst))
-                                           (if(isVoid (car lst)(cdr lst))
-                                              (list(append (list 'integer?) (cdr (car lst))))
-                                              (if (equal? (car (car lst)) 'void?)
-                                                  '()
-                                                  (list(car lst))
-                                                  )
-                                              )
-                                           (raise 'failed #t)
-                                       )
-                                    (determineTypeHelp (cdr lst)))
-                                   ))
+(define (determineType lst) (determineTypeHelp
+                                                                    (remove-duplicates lst)
+                                                                    (remove-duplicates lst)))
+(define (determineTypeHelp lst fullLst)(if (empty? lst)
+                                           '()
+                                           (append
+                                            (if (isValid (car lst)(cdr lst))
+                                                (if(isVoid (car lst) fullLst)
+                                                   (list(append (list 'integer?) (cdr (car lst))))
+                                                   (if (equal? (car (car lst)) 'void?)
+                                                       '()
+                                                       (list(car lst))
+                                                       )
+                                                   )
+                                                (raise 'failed #t)
+                                                )
+                                            (determineTypeHelp (cdr lst) fullLst))
+                                           ))
 ;; ------------------
 ;;  Variable Parsing
 ;; ------------------
@@ -186,7 +188,8 @@
 ;;  Utility Functions
 ;; -------------------
 (define (isVoid item lst)(if (equal? (car item) 'void?)
-                             (andmap (lambda (item2) (!(equal? (cdr item2) (cdr item)))) lst)
+                             (andmap (lambda (item2) (or (equal? (car item2) (car item))
+                                                          (!(equal? (cdr item2) (cdr item))))) lst)
                              #f))
 (define (isValid item lst) (andmap (lambda (item2)
                                                  (if (equal? (cdr item) (cdr item2))
