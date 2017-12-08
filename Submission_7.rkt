@@ -13,43 +13,43 @@
 ;; Our make-rosette-simple function
 ;(define (make-rosette-simple formula) (make-rosette-simple formula (compute-height (syntax->datum formula) 0))) 
 (define (make-rosette-simple formula depth) (begin (printf "Trying at depth ~a ...\n" depth)(append
-                                       (generate-declarations (determineType (instance-types formula)))
-                                       (list (list
-                                              'synthesize
-                                              '#:forall (append (list (quote list)) (getvars formula))
-                                              '#:guarantee (quasiquote(assert (eq?
-                                                                                (unquote formula)
-                                                                                (unquote (skeleton-expression formula depth)))))))
-                                       )))
+                                                                                             (generate-declarations (determineType (instance-types formula)))
+                                                                                             (list (list
+                                                                                                    'synthesize
+                                                                                                    '#:forall (append (list (quote list)) (getvars formula))
+                                                                                                    '#:guarantee (quasiquote(assert (eq?
+                                                                                                                                     (unquote formula)
+                                                                                                                                     (unquote (skeleton-expression formula depth)))))))
+                                                                                             )))
 ;; Alt to make-sosette-simple that allows us to output solution
 (define (print-solution formula depth) (append gen-exp-text
-                                        (generate-declarations (determineType (instance-types formula)))
-                                        (list (quasiquote (define (unquote (append(list (quote gen)) (getvars formula)))
-                                                      (unquote (append (list (quote gen-expression))
-                                                                       (list (get-booleans formula))
-                                                                       (list (get-integers formula))
-                                                                       (list (get-constants formula))
-                                                                       (list depth))))
-                                                      ))
-                                        (list (quasiquote (syntax->datum (car(generate-forms
-                                                           (unquote (list
-                                                                    'synthesize
-                                                                    '#:forall (append (list (quote list)) (getvars formula))
-                                                                    '#:guarantee (quasiquote(assert (eq?
-                                                                                                     (unquote formula)
-                                                                                                     (unquote (skeleton-expression-print formula))))))))))
-                                                          ) ";")))
+                                               (generate-declarations (determineType (instance-types formula)))
+                                               (list (quasiquote (define (unquote (append(list (quote gen)) (getvars formula)))
+                                                                   (unquote (append (list (quote gen-expression))
+                                                                                    (list (get-booleans formula))
+                                                                                    (list (get-integers formula))
+                                                                                    (list (get-constants formula))
+                                                                                    (list depth))))
+                                                                 ))
+                                               (list (quasiquote (syntax->datum (car(generate-forms
+                                                                                     (unquote (list
+                                                                                               'synthesize
+                                                                                               '#:forall (append (list (quote list)) (getvars formula))
+                                                                                               '#:guarantee (quasiquote(assert (eq?
+                                                                                                                                (unquote formula)
+                                                                                                                                (unquote (skeleton-expression-print formula))))))))))
+                                                                 ) ";")))
 ;; Evaluates the series of expressions generated by make-rosette-simple
 (define (eval-exp expr)(eval (append '(begin) expr)ns))
 ;; Our define-synthax function
 (define-synthax(gen-expression (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
- #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
- #:else (choose
-         #t #f booleanvariables ... integervariables ... integerconstants ...
+  #:base (choose #t #f booleanvariables ... integervariables ... integerconstants ...)
+  #:else (choose
+          #t #f booleanvariables ... integervariables ... integerconstants ...
           ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                                                   (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                          (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
               (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
@@ -57,17 +57,17 @@
           )
   )
 (define-synthax(gen-expression-weaker (booleanvariables ...) (integervariables ...) (integerconstants ...) height)
- #:base (choose booleanvariables ... integervariables ...)
- #:else (choose booleanvariables ... integervariables ... 
-          ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                         (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-          ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-                                                         (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-          ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-          (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
-          )
+  #:base (choose booleanvariables ... integervariables ...)
+  #:else (choose booleanvariables ... integervariables ... 
+                 ((choose = >= > <= < + - min max equal?) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                                          (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                 ((choose && ||) (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                                 (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                 ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                 (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                     (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
+                     (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
+                 )
   )
 ;; Starting with the height of the given formula, repeatedly attempts to synthesize the formula with
 ;; decreasing depth until we get an unsat. Returns the synthesis with the lowest depth
@@ -88,19 +88,19 @@
 ;; Write rosette-simple to a file
 ;(define (outputRossette ros-simple) (display ros-simple (open-output-file "data.txt")))
 (define (output-rosette-to-file ros-simple)(call-with-output-file
-                                       "data.rkt"#:exists 'append
-                                     (lambda (out) (display ros-simple out))))
+                                               "data.rkt"#:exists 'append
+                                             (lambda (out) (display ros-simple out))))
 (define (output-prep)(call-with-output-file
-                                       "data.rkt"#:exists 'truncate
-                                     (lambda (out) (display ";" out))))
+                         "data.rkt"#:exists 'truncate
+                       (lambda (out) (display ";" out))))
 ;; Generates a skeleton expression for use by make-rosette-simple and print-solution.
 ;; Currently just extracts the outermost operator in the formula and applies it to
 ;; 2 gen-expression calls
 (define (skeleton-expression formula depth) (quasiquote(unquote (append (list (quote gen-expression))
-                                                                         (list (get-booleans formula))
-                                                                         (list (get-integers formula))
-                                                                         (list (get-constants formula))
-                                                                         (list depth)))))
+                                                                        (list (get-booleans formula))
+                                                                        (list (get-integers formula))
+                                                                        (list (get-constants formula))
+                                                                        (list depth)))))
 (define (skeleton-expression-print formula) (quasiquote(unquote (append (list (quote gen))
                                                                         (get-booleans formula)
                                                                         (get-integers formula)))))
@@ -119,19 +119,19 @@
 ;; these types and determine what type each variable should ultimately be assigned
 (define (instance-types formula) (process-elements (rest formula) (optype? (car formula))))
 (define (process-elements elements type) (if (null? elements)
-                                               (list)
-                                               (if (list? (car elements))
-                                                   (append (instance-types (car elements)) (check-if-case elements type))
-                                                   (if (or (number? (car elements)) (boolean? (car elements)))
-                                                       (check-if-case elements type)
-                                                       (if (eq? type 'both?)
-                                                           (append (list (list 'boolean? (car elements))) (check-if-case elements type))
-                                                           (append (list (list type (car elements))) (check-if-case elements type)))))))
+                                             (list)
+                                             (if (list? (car elements))
+                                                 (append (instance-types (car elements)) (check-if-case elements type))
+                                                 (if (or (number? (car elements)) (boolean? (car elements)))
+                                                     (check-if-case elements type)
+                                                     (if (eq? type 'both?)
+                                                         (append (list (list 'boolean? (car elements))) (check-if-case elements type))
+                                                         (append (list (list type (car elements))) (check-if-case elements type)))))))
 ;; acounts for the if case - first one is a boolean the rest are void.
 (define (check-if-case elements type)(if (eq? type 'both?)
-                                        (process-elements (rest elements) 'void?)
-                                        (process-elements (rest elements) type)
-                                        )
+                                         (process-elements (rest elements) 'void?)
+                                         (process-elements (rest elements) type)
+                                         )
   )
 ;; Infers the types of all variables in the formula
 (define (determineType lst) (determineTypeHelp
@@ -162,21 +162,21 @@
 ;; A helper function that returns a list of all the boolean variables in a formula
 (define (get-booleans formula) (parse-booleans (generate-declarations (determineType (instance-types formula)))))
 (define (parse-booleans variables) (if (null? variables)
-                                           (list)
-                                           (if (eq?(third (car variables)) 'integer?)
-                                               (parse-booleans (rest variables))
-                                               (append (list (second (car variables)))
-                                                       (parse-booleans (rest variables))))
-                                           ))
+                                       (list)
+                                       (if (eq?(third (car variables)) 'integer?)
+                                           (parse-booleans (rest variables))
+                                           (append (list (second (car variables)))
+                                                   (parse-booleans (rest variables))))
+                                       ))
 ;; A helper function that returns a list of all the integer variables in a formula
 (define (get-integers formula) (parse-integers (generate-declarations (determineType (instance-types formula)))))
 (define (parse-integers variables) (if (null? variables)
-                                           (list)
-                                           (if (eq?(third (car variables)) 'boolean?)
-                                               (parse-integers (rest variables))
-                                               (append (list (second (car variables)))
-                                                       (parse-integers (rest variables))))
-                                           ))
+                                       (list)
+                                       (if (eq?(third (car variables)) 'boolean?)
+                                           (parse-integers (rest variables))
+                                           (append (list (second (car variables)))
+                                                   (parse-integers (rest variables))))
+                                       ))
 ;; A helper function that returns a list of all the integer constants in a formula
 (define (get-constants formula) (remove-duplicates (build-constant-list (flat-list formula))))
 (define (build-constant-list formula) (if (null? formula)
@@ -189,15 +189,15 @@
 ;; -------------------
 (define (isVoid item lst)(if (equal? (car item) 'void?)
                              (andmap (lambda (item2) (or (equal? (car item2) (car item))
-                                                          (!(equal? (cdr item2) (cdr item))))) lst)
+                                                         (!(equal? (cdr item2) (cdr item))))) lst)
                              #f))
 (define (isValid item lst) (andmap (lambda (item2)
-                                                 (if (equal? (cdr item) (cdr item2))
-                                                     (or (equal? (car item) 'void?)
-                                                         (equal? (car item2) 'void?))
-                                                     #t
-                                                     ))
-                                               lst))
+                                     (if (equal? (cdr item) (cdr item2))
+                                         (or (equal? (car item) 'void?)
+                                             (equal? (car item2) 'void?))
+                                         #t
+                                         ))
+                                   lst))
 ;; A helper function that computes the height of the expression
 (define (compute-height formula height) (if (list? formula)
                                             (listmax (map (lambda (f) (compute-height f (+ 1 height))) formula))
@@ -207,8 +207,8 @@
                           (max (car lst) (listmax (rest lst)))))
 (define (notinteger i)
   (cond
-   [(integer? i) #f]
-   [else #t])
+    [(integer? i) #f]
+    [else #t])
   )
 (define (flat-list lst)
   (cond ((null? lst) '())
@@ -218,11 +218,11 @@
         (else
          (list lst))))
 (define (removeops lst)
- (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if 'equal? '%top '#t '#f 'add1 'sub1) (flat-list lst)))
+  (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if 'equal? '%top '#t '#f 'add1 'sub1) (flat-list lst)))
 
 (define (print-to-file-and-get-solution) (begin (system "Racket data.rkt > solution.txt")
-                              (define solution (file->syntax "solution.txt"))
-                              (pretty-print (syntax->datum solution))))
+                                                (define solution (file->syntax "solution.txt"))
+                                                (pretty-print (syntax->datum solution))))
 
 ;; -----------------------------
 ;;  Manual Simplification Rules
@@ -236,30 +236,30 @@
                                                                     (simplification_rules (third formula)))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
-                                             ['> (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                             ['> (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
                                                      (simplify_comparison_identical (simplification_rules (second formula))
-                                                                              (simplification_rules (third formula))
-                                                                              '>)
+                                                                                    (simplification_rules (third formula))
+                                                                                    '>)
                                                      (simplify_greater_than (simplification_rules (second formula)) 
                                                                             (simplification_rules (third formula))))]
-                                             ['< (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
+                                             ['< (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
                                                      (simplify_comparison_identical (simplification_rules (second formula))
-                                                                              (simplification_rules (third formula))
-                                                                              '<)
+                                                                                    (simplification_rules (third formula))
+                                                                                    '<)
                                                      (simplify_less_than (simplification_rules (second formula))
                                                                          (simplification_rules (third formula))))]
-                                             ['>= (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
-                                                     (simplify_comparison_identical (simplification_rules (second formula))
-                                                                              (simplification_rules (third formula))
-                                                                              '>=)
-                                                     (simplify_greater_than_eq (simplification_rules (second formula))
-                                                                               (simplification_rules (third formula))))]
-                                             ['<= (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
-                                                     (simplify_comparison_identical (simplification_rules (second formula))
-                                                                              (simplification_rules (third formula))
-                                                                              '<=)
-                                                     (simplify_less_than_eq (simplification_rules (second formula))
-                                                                            (simplification_rules (third formula))))]
+                                             ['>= (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
+                                                      (simplify_comparison_identical (simplification_rules (second formula))
+                                                                                     (simplification_rules (third formula))
+                                                                                     '>=)
+                                                      (simplify_greater_than_eq (simplification_rules (second formula))
+                                                                                (simplification_rules (third formula))))]
+                                             ['<= (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
+                                                      (simplify_comparison_identical (simplification_rules (second formula))
+                                                                                     (simplification_rules (third formula))
+                                                                                     '<=)
+                                                      (simplify_less_than_eq (simplification_rules (second formula))
+                                                                             (simplification_rules (third formula))))]
                                              ['== (simplify_double_equal (simplification_rules (second formula))
                                                                          (simplification_rules (third formula)))]
                                              ['min (simplify_min (simplification_rules (second formula))
@@ -279,48 +279,108 @@
                                              [else formula])
                                            formula))
 
-(define (simplify_addition arg1 arg2) (if (eq? arg1 0)
-                                          arg2
-                                          (if (eq? arg2 0)
-                                              arg1
-                                              (list '+ arg1 arg2))))
+(define (simplify_addition arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (+ arg1 arg2)
+                                          (if (eq? arg1 0)
+                                              arg2
+                                              (if (eq? arg2 0)
+                                                  arg1
+                                                  (list '+ arg1 arg2)))))
 
-(define (simplify_subtraction arg1 arg2) (if (eq? arg2 0)
-                                             arg1
-                                             (list '- arg1 arg2)))
+(define (simplify_subtraction arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (- arg1 arg2)
+                                             (if (eq? arg2 0)
+                                                 arg1
+                                                 (list '- arg1 arg2))))
 
-(define (simplify_greater_than arg1 arg2) (if (eq? arg1 arg2)
-                                              #f
-                                              (list '> arg1 arg2)))
+(define (simplify_greater_than arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (> arg1 arg2)
+                                              (if (eq? arg1 arg2)
+                                                  #f
+                                                  (list '> arg1 arg2))))
 
-(define (simplify_less_than arg1 arg2) (if (eq? arg1 arg2)
-                                           #f
-                                           (list '< arg1 arg2)))
+(define (simplify_less_than arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (< arg1 arg2)
+                                           (if (eq? arg1 arg2)
+                                               #f
+                                               (list '< arg1 arg2))))
 
-(define (simplify_greater_than_eq arg1 arg2) (if (eq? arg1 arg2)
-                                                 #t
-                                                 (list '>= arg1 arg2)))
+(define (simplify_greater_than_eq arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (>= arg1 arg2)
+                                                 (if (eq? arg1 arg2)
+                                                     #t
+                                                     (list '>= arg1 arg2))))
 
-(define (simplify_less_than_eq arg1 arg2) (if (eq? arg1 arg2)
-                                              #t
-                                              (list '<= arg1 arg2)))
+(define (simplify_less_than_eq arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (<= arg1 arg2)
+                                              (if (eq? arg1 arg2)
+                                                  #t
+                                                  (list '<= arg1 arg2))))
 
 
 (define (simplify_comparison_identical arg1 arg2 operator) (if (and (list? arg1) (list? arg2))
-                                                (if (member (second arg1) arg2)
-                                                    (list operator (second (remove (second arg1) arg1)) (second(remove (second arg1) arg2)))
-                                                    (if (member (third arg1) arg2)
-                                                        (list operator (second (remove (third arg1) arg1)) (second (remove (third arg1) arg2)))
-                                                        (list operator arg1 arg2)
-                                                        )
-                                                )
-                                                (list '< arg1 arg2)))
+                                                               (if (member (second arg1) arg2)
+                                                                   (if (or (eq? arg2 arg1)
+                                                                           (eq? (append (list (first arg2)) (list (third arg2))(list (second arg2))) arg1));both are the same 
+                                                                       (eval(list operator 0 0))
+                                                                       (list operator (second (remove (second arg1) arg1)) (second(remove (second arg1) arg2))))
+                                                                   (if (member (third arg1) arg2)
+                                                                       (list operator (second (remove (third arg1) arg1)) (second (remove (third arg1) arg2)))
+                                                                       (list operator arg1 arg2)
+                                                                       )
+                                                                   )
+                                                               (list operator arg1 arg2)))
 
 (define (simplify_double_equal arg1 arg2) (list '= arg1 arg2))
 
-(define (simplify_min arg1 arg2) (list 'min arg1 arg2))
-
-(define (simplify_max arg1 arg2) (list 'max arg1 arg2))
+(define (simplify_min arg1 arg2) (if (and (list? arg1) (eq? 'min (car arg1)));check left is max
+                                     (if (or (eq? arg2 (second arg1))(eq? arg2 (third arg1)));check redudent
+                                         arg1
+                                         (minmaxhelper arg1 arg2 'min)
+                                         )
+                                     (if (and (list? arg2) (eq? 'min (car arg2)));check right is max
+                                         (if (or (eq? arg1 (second arg2))(eq? arg1 (third arg2)));check redudent
+                                             arg2
+                                             (minmaxhelper arg2 arg1 'min)
+                                             )
+                                         (if (and (integer? arg1) (integer? arg2));direct evaluation
+                                             (max arg1 arg2)
+                                             (if (eq? arg2 arg1); if they are the same
+                                                 arg1
+                                                 (list 'min arg1 arg2 )
+                                                 )
+                                             )
+                                         )
+                                     )
+  )
+(define (simplify_max arg1 arg2) (if (and (list? arg1) (eq? 'max (car arg1)));check left is max
+                                     (if (or (eq? arg2 (second arg1))(eq? arg2 (third arg1)));check redudent
+                                         arg1
+                                         (minmaxhelper arg1 arg2 'max)
+                                         )
+                                     (if (and (list? arg2) (eq? 'max (car arg2)));check right is max
+                                         (if (or (eq? arg1 (second arg2))(eq? arg1 (third arg2)));check redudent
+                                             arg2
+                                             (minmaxhelper arg2 arg1 'max)
+                                             )
+                                         (if (and (integer? arg1) (integer? arg2));direct evaluation
+                                             (max arg1 arg2)
+                                             (if (eq? arg2 arg1); if they are the same
+                                                 arg1
+                                                 (list 'max arg1 arg2 )
+                                                 )
+                                             )
+                                         )
+                                     )
+  )
+(define (minmaxhelper arg1 arg2 op) (if (list? arg2);check right min and left max
+                                        (if (or (eq? (append (list op) (cdr arg2)) arg1)
+                                                (eq? (append (list op) (list (third arg2))(list (second arg2))) arg1)
+                                                (eq? arg2 arg1)
+                                                (eq? (append (list (first arg2)) (list (third arg2))(list (second arg2))) arg1))
+                                            arg1
+                                            (list op arg1 arg2 )
+                                            )
+                                        (list op arg1 arg2 )
+                                        )
+  )
+ 
+;(max (max x y) (min x y)) -> (max x y)
+;(min (max x y) (min x y)) -> (min x y)
 
 (define (simplify_not arg1) (if (eq? arg1 #t)
                                 #f
@@ -335,11 +395,13 @@
                                         (list 'or arg1 arg2))))
 
 (define (simplify_and arg1 arg2) (if (or (eq? arg1 #f) (eq? arg2 #f))
-                                    #f
-                                    (if (and (eq? arg1 #t) (eq? arg2 #t))
-                                        #t
-                                        (list 'and arg1 arg2))))
+                                     #f
+                                     (if (and (eq? arg1 #t) (eq? arg2 #t))
+                                         #t
+                                         (list 'and arg1 arg2))))
 
-(define (simplify_equal arg1 arg2) (list 'equal? arg1 arg2))
+(define (simplify_equal arg1 arg2) (if (and (boolean? arg1) (boolean? arg2)) (eq? arg1 arg2)
+                                       (list 'equal? arg1 arg2)))
 
-(define (simplify_if arg1 arg2 arg3) (if (equal? arg2 arg3) arg3 (list 'if arg1 arg2 arg3)))
+(define (simplify_if arg1 arg2 arg3) (if (boolean? arg1) (if arg1 arg2 arg3)
+                                         (if (equal? arg2 arg3) arg3 (list 'if arg1 arg2 arg3))))

@@ -27,4 +27,4 @@
           ((choose add1 sub1 !) (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1)))
           (if (gen-expression-weaker (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
               (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))
-              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))))) (define-symbolic a boolean?) (define-symbolic b boolean?) (define (gen a b) (gen-expression (a b) () () 1)) (syntax->datum (car (generate-forms (synthesize #:forall (list a b) #:guarantee (assert (eq? (or a b) (gen a b))))))) ;)
+              (gen-expression (booleanvariables ...)  (integervariables ...) (integerconstants ...) (- height 1))))) (define-symbolic x boolean?) (define-symbolic y integer?) (define (gen x y) (gen-expression (x) (y) () 0)) (syntax->datum (car (generate-forms (synthesize #:forall (list x y) #:guarantee (assert (eq? (if x y y) (gen x y))))))) ;)
