@@ -247,14 +247,9 @@
 
 (define (simplification_rules formula) (if (and (list? formula))
                                            (case (car formula)
-                                             ['+ (if (or (and (not (list? (second formula))) (list? (third formula)))
-                                                         (and (not (list? (third formula))) (list? (second formula))))
-                                                     (if (list? (second formula)) (simplify_addition_cancelation (third formula)
-                                                                                                                 (simplification_rules (second formula)))
-                                                         (simplify_addition_cancelation (second formula)
-                                                                                        (simplification_rules (third formula))))
+                                             ['+ 
                                                      (simplify_addition (simplification_rules (second formula))
-                                                                    (simplification_rules (third formula))))]
+                                                                    (simplification_rules (third formula)))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
                                              ['> (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
