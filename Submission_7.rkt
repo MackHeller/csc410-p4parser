@@ -367,7 +367,7 @@
                                              (minmaxhelper arg2 arg1 'min)
                                              )
                                          (if (and (integer? arg1) (integer? arg2));direct evaluation
-                                             (max arg1 arg2)
+                                             (min arg1 arg2)
                                              (if (eq? arg2 arg1); if they are the same
                                                  arg1
                                                  (list 'min arg1 arg2 )
