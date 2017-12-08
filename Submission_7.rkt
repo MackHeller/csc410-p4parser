@@ -142,7 +142,8 @@
                                            (append
                                             (if (isValid (car lst)(cdr lst))
                                                 (if(isVoid (car lst) fullLst)
-                                                   (list(append (list 'integer?) (cdr (car lst))))
+                                                   (begin (printf "Warning: we are assuming that ~a is an integer\n" (cdr (car lst)))
+                                                     (list(append (list 'integer?) (cdr (car lst)))))
                                                    (if (equal? (car (car lst)) 'void?)
                                                        '()
                                                        (list(car lst))
