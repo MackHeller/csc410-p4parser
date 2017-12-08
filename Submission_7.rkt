@@ -308,7 +308,7 @@
                                                   (list '+ arg1 arg2)))))
 
 
-(define (simplify_addition_cancelation arg1 arg2) (if (number? arg1)
+(define (simplify_addition_cancelation arg1 arg2) (if (and (number? arg1) (list? arg2))
                                                       (if (member (- 0 arg1) arg2)
                                                           (second (remove (- 0 arg1) arg2))
                                                           (list '+ arg1 arg2))
