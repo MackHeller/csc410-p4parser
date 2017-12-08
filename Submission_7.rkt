@@ -74,6 +74,7 @@
 (define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))
                                   (define simp-exp (manual_simplification expr))
                                   (printf "Manual simplification complete: ~a \n" simp-exp)
+                                  (generateWarnings (manual_simplification expr))
                                   (if (list? simp-exp)
                                       (begin
                                         (simplify-exp-rec simp-exp 0)
@@ -142,8 +143,7 @@
                                            (append
                                             (if (isValid (car lst)(cdr lst))
                                                 (if(isVoid (car lst) fullLst)
-                                                   (begin (printf "Warning: we are assuming that ~a is an integer\n" (cdr (car lst)))
-                                                     (list(append (list 'integer?) (cdr (car lst)))))
+                                                   (list(append (list 'integer?) (cdr (car lst))))
                                                    (if (equal? (car (car lst)) 'void?)
                                                        '()
                                                        (list(car lst))
@@ -185,6 +185,20 @@
                                           (if (number? (car formula))
                                               (append (list (car formula)) (build-constant-list (rest formula)))
                                               (build-constant-list (rest formula)))))
+
+(define (generateWarnings formula) (generateWarningsHelp (instance-types formula) (instance-types formula)))
+(define (generateWarningsHelp lst fullList) (if (not (null? lst))
+                                                (if (not (successfulInference (cdr (car lst)) fullList))
+                                                    (begin (printf "Warning: we are assuming that ~a is an integer\n" (cdr (car lst)))
+                                                           (generateWarningsHelp (rest lst) fullList))
+                                                    (generateWarningsHelp (rest lst) fullList))
+                                                (values)
+                                                ))
+(define (successfulInference variable lst) (if (null? lst)
+                                                    #f
+                                                    (if (and (eq? variable (cdr (car lst))) (not (eq? (car (car lst)) 'void?)))
+                                                        #t
+                                                        (successfulInference variable (rest lst)))))
 ;; -------------------
 ;;  Utility Functions
 ;; -------------------
