@@ -247,8 +247,14 @@
 
 (define (simplification_rules formula) (if (and (list? formula))
                                            (case (car formula)
-                                             ['+ (simplify_addition (simplification_rules (second formula))
-                                                                    (simplification_rules (third formula)))]
+                                             ['+ (if (or (and (not (list? (second formula))) (list? (third formula)))
+                                                         (and (not (list? (third formula))) (list? (second formula))))
+                                                     (if (list? (second formula)) (simplify_addition_cancelation (third formula)
+                                                                                                                 (simplification_rules (second formula)))
+                                                         (simplify_addition_cancelation (second formula)
+                                                                                        (simplification_rules (third formula))))
+                                                     (simplify_addition (simplification_rules (second formula))
+                                                                    (simplification_rules (third formula))))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
                                              ['> (if (and (equal? (car (second formula)) '+) (equal? (car (second formula)) '+))
@@ -299,6 +305,12 @@
                                           (if (eq? arg2 0)
                                               arg1
                                               (list '+ arg1 arg2))))
+
+(define (simplify_addition_cancelation arg1 arg2) (if (number? arg1)
+                                                      (if (member (- 0 arg1) arg2)
+                                                          (list (second (remove (- 0 arg1) arg2)))
+                                                          (list '+ arg1 arg2))
+                                                      (list '+ arg1 arg2)))
 
 (define (simplify_subtraction arg1 arg2) (if (eq? arg2 0)
                                              arg1
