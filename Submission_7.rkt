@@ -353,7 +353,8 @@
                                                                    )
                                                                (list operator arg1 arg2)))
 
-(define (simplify_double_equal arg1 arg2) (list '= arg1 arg2))
+
+(define (simplify_double_equal arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (equal? arg1 arg2) ( (list '= arg1 arg2))))
 
 (define (simplify_min arg1 arg2) (if (and (list? arg1) (eq? 'min (car arg1)));check left is max
                                      (if (or (eq? arg2 (second arg1))(eq? arg2 (third arg1)));check redudent
