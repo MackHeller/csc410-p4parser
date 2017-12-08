@@ -77,12 +77,13 @@
                                   (if (list? simp-exp)
                                       (begin
                                         (generateWarnings (manual_simplification expr))
-                                        (simplify-exp-rec simp-exp 0)
-                                        (print-to-file-and-get-solution))
+                                        (print-to-file-and-get-solution (simplify-exp-rec simp-exp 0)))
                                       simp-exp)))
 (define (simplify-exp-rec expr n)(if (and (!(>= n (compute-height expr 0))) (unsat? (eval-exp (make-rosette-simple expr n))))
                                      (simplify-exp-rec expr (+ n 1))
-                                     (begin (printf "Success at ~a!!\n" n)(output-prep)(output-rosette-to-file(print-solution expr n)))
+                                     (if (>= n (compute-height expr 0))
+                                         (begin (printf "Success at ~a!!\n" n)(printf "~a\n" expr) 0)
+                                         (begin (printf "Success at ~a!!\n" n)(output-prep)(output-rosette-to-file(print-solution expr n)) 1))
                                      )
   )
 
@@ -235,9 +236,11 @@
 (define (removeops lst)
   (remove* (list '+ '- 'or 'and 'min 'max '>= '> '< '<= '== '! '= 'if 'equal? '%top '#t '#f 'add1 'sub1) (flat-list lst)))
 
-(define (print-to-file-and-get-solution) (begin (system "Racket data.rkt > solution.txt")
-                                                (define solution (file->syntax "solution.txt"))
-                                                (pretty-print (syntax->datum solution))))
+(define (print-to-file-and-get-solution flag) (if (eq? flag 1)
+                                                  (begin (system "Racket data.rkt > solution.txt")
+                                                         (define solution (file->syntax "solution.txt"))
+                                                         (pretty-print (syntax->datum solution)))
+                                                  (values)))
 
 ;; -----------------------------
 ;;  Manual Simplification Rules
