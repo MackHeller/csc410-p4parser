@@ -285,14 +285,8 @@
                                                                          (simplification_rules (third formula)))]
                                              ['min (simplify_min (simplification_rules (second formula))
                                                                  (simplification_rules (third formula)))]
-                                             ['max (if (or (and (not (list? (second formula))) (list? (third formula)))
-                                                         (and (not (list? (third formula))) (list? (second formula))))
-                                                       (if (list? (second formula)) (simplify_max_zero (third formula)
-                                                                                                                 (simplification_rules (second formula)))
-                                                       (simplify_max_zero (second formula)
-                                                                                        (simplification_rules (third formula))))
-                                                       (simplify_max (simplification_rules (second formula))
-                                                                 (simplification_rules (third formula))))]
+                                             ['max (simplify_max (simplification_rules (second formula))
+                                                                     (simplification_rules (third formula)))]
                                              [(not !) (simplify_not (simplification_rules (second formula)))]
                                              [(or ||) (simplify_or (simplification_rules (second formula))
                                                                    (simplification_rules (third formula)))]
@@ -401,13 +395,6 @@
                                          )
                                      )
   )
-
-(define (simplify_max_zero arg1 arg2) (if (and (and (number? arg1) (> arg1 0)) (or (and (number? (second arg2)) (eq? (second arg2) 0)) (and (number? (third arg2)) (eq? (third arg2) 0))))
-                                           (list 'max arg1 (second (remove 0 arg2)))
-                                           (if (and (list? arg2) (or (and (and (number? (second arg2)) (eq? (second arg2) 0)) (and (number? (third arg2)) (> (third arg2) 0)))
-                                                   (and (and (number? (third arg2)) (eq? (third arg2) 0)) (and (number? (second arg2)) (> (second arg2) 0)))))
-                                               (list 'max arg1 (second (remove 0 arg2)))
-                                               (list 'max arg1 arg2))))
 
 (define (minmaxhelper arg1 arg2 op) (if (list? arg2);check right min and left max
                                         (if (or (eq? (append (list op) (cdr arg2)) arg1)
