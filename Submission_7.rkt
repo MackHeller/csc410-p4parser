@@ -74,9 +74,9 @@
 (define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))
                                   (define simp-exp (manual_simplification expr))
                                   (printf "Manual simplification complete: ~a \n" simp-exp)
-                                  (generateWarnings (manual_simplification expr))
                                   (if (list? simp-exp)
                                       (begin
+                                        (generateWarnings (manual_simplification expr))
                                         (simplify-exp-rec simp-exp 0)
                                         (print-to-file-and-get-solution))
                                       simp-exp)))
