@@ -74,6 +74,7 @@
 (define (simplify-exp expr)(begin (printf "Expression to simplify: ~a \n" (syntax->datum expr))
                                   (define simp-exp (manual_simplification expr))
                                   (printf "Manual simplification complete: ~a \n" simp-exp)
+                                  (generateWarnings (manual_simplification expr))
                                   (if (list? simp-exp)
                                       (begin
                                         (simplify-exp-rec simp-exp 0)
@@ -184,6 +185,20 @@
                                           (if (number? (car formula))
                                               (append (list (car formula)) (build-constant-list (rest formula)))
                                               (build-constant-list (rest formula)))))
+
+(define (generateWarnings formula) (generateWarningsHelp (instance-types formula) (instance-types formula)))
+(define (generateWarningsHelp lst fullList) (if (not (null? lst))
+                                                (if (not (successfulInference (cdr (car lst)) fullList))
+                                                    (begin (printf "Warning: we are assuming that ~a is an integer\n" (cdr (car lst)))
+                                                           (generateWarningsHelp (rest lst) fullList))
+                                                    (generateWarningsHelp (rest lst) fullList))
+                                                (values)
+                                                ))
+(define (successfulInference variable lst) (if (null? lst)
+                                                    #f
+                                                    (if (and (eq? variable (cdr (car lst))) (not (eq? (car (car lst)) 'void?)))
+                                                        #t
+                                                        (successfulInference variable (rest lst)))))
 ;; -------------------
 ;;  Utility Functions
 ;; -------------------
@@ -232,8 +247,14 @@
 
 (define (simplification_rules formula) (if (and (list? formula))
                                            (case (car formula)
-                                             ['+ (simplify_addition (simplification_rules (second formula))
-                                                                    (simplification_rules (third formula)))]
+                                             ['+ (if (or (and (not (list? (second formula))) (list? (third formula)))
+                                                         (and (not (list? (third formula))) (list? (second formula))))
+                                                     (if (list? (second formula)) (simplify_addition_cancelation (third formula)
+                                                                                                                 (simplification_rules (second formula)))
+                                                         (simplify_addition_cancelation (second formula)
+                                                                                        (simplification_rules (third formula))))
+                                                     (simplify_addition (simplification_rules (second formula))
+                                                                    (simplification_rules (third formula))))]
                                              ['- (simplify_subtraction (simplification_rules (second formula))
                                                                        (simplification_rules (third formula)))]
                                              ['> (if (and (list? (second formula)) (list? (third formula))(equal? (car (second formula)) '+) (equal? (car (third formula)) '+))
@@ -285,6 +306,13 @@
                                               (if (eq? arg2 0)
                                                   arg1
                                                   (list '+ arg1 arg2)))))
+
+
+(define (simplify_addition_cancelation arg1 arg2) (if (number? arg1)
+                                                      (if (member (- 0 arg1) arg2)
+                                                          (list (second (remove (- 0 arg1) arg2)))
+                                                          (list '+ arg1 arg2))
+                                                      (list '+ arg1 arg2)))
 
 (define (simplify_subtraction arg1 arg2) (if (and (integer? arg1) (integer? arg2)) (- arg1 arg2)
                                              (if (eq? arg2 0)
